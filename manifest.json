@@ -1,0 +1,9 @@
+{
+ "name":"ECE 1A Class Portal","short_name":"ECE 1A","description":"Offline schedule, to-do, reviewers and attendance for ECE 1A",
+ "start_url":"./index.html","scope":"./","display":"standalone","orientation":"portrait",
+ "background_color":"#FFFFFF","theme_color":"#41478B",
+ "icons":[
+  {"src":"icon-192.png","sizes":"192x192","type":"image/png","purpose":"any"},
+  {"src":"icon-512.png","sizes":"512x512","type":"image/png","purpose":"any"}
+ ]
+}

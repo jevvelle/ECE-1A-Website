@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>ECE 1A Portal</title>
+<link rel="manifest" href="manifest.json"><meta name="theme-color" content="#41478B">
+<meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="ECE 1A">
+<link rel="apple-touch-icon" href="icon-192.png"><link rel="icon" href="icon-192.png">
+<link rel="stylesheet" href="styles.css"></head><body>
+<header><img class="logo" src="icon-192.png" alt=""><b class="brand">ECE 1A</b><button id="chip" class="pill">Schedule</button><button id="bell" class="pill" aria-label="Settings">Settings</button></header>
+<main>
+<section id="v-home" class="view on">
+ <div class="hello"><div><h1 id="hi">HELLO.</h1><p id="hs" class="mut"></p></div></div>
+ <div id="mc"></div>
+ <div id="inst" class="card row2" hidden><div><b>Install this app</b><small>Open it like a normal app, even offline</small></div><span><button class="pill inst" type="button">Install</button> <button id="instx" class="x" type="button" aria-label="Dismiss">×</button></span></div>
+ <div id="count" class="dark"></div>
+ <h2>My Subjects</h2><div id="sc" class="scroll"></div>
+ <div id="pts"></div>
+ <div class="row"><h2>Timetable</h2><div class="seg" id="tv"><button data-m="a" class="on">Agenda</button><button data-m="w">Week</button><button data-m="m">Month</button></div></div>
+ <div id="tt"></div>
+</section>
+<section id="v-todo" class="view"><h2>To-Do</h2>
+ <div class="card row2"><b id="pct"></b><div class="bar"><i id="bar"></i></div></div>
+ <div class="seg wrap" id="ts"></div>
+ <form id="addf" class="card"><input id="nt" placeholder="Add your own task" required>
+  <div class="row"><select id="ns"></select><input id="nd" type="date" required></div><button class="btn">Add task</button></form>
+ <div id="tl"></div></section>
+<section id="v-study" class="view">
+ <div class="hello"><div><h1>REVIEWER</h1><p class="mut">Formula cards by subject and exam</p></div><img class="mas" src="mascot-calc.png" alt=""></div>
+ <div class="row"><select id="vs"></select><select id="vp"></select></div><div id="vl"></div>
+</section>
+<section id="v-kiosk" class="view"><h2>Secretary's Kiosk</h2>
+ <div class="seg" id="km"><button data-m="a" class="on">Attendance</button><button data-m="r">Recitation</button></div>
+ <div class="row"><select id="kblock"></select><input id="kdate" type="date"></div>
+ <input id="ksearch" type="search" placeholder="Search surname">
+ <p id="kcount" class="dark small"></p><div id="kl"></div>
+ <div class="row"><button id="kcopy" class="btn">Copy List</button><button id="kcsv" class="btn alt">Download CSV</button></div>
+ <div class="nb"><b>Share with the class</b><small>Classmates open the link to see their own attendance and recitation points. It contains the whole class record, so send it only in the class group chat.</small><div class="row"><button id="kshare" class="btn alt" type="button">Share update link</button><button id="kcode" class="btn alt" type="button">Copy update code</button></div></div></section>
+<section id="v-class" class="view"><h2>Who's in My Class?</h2>
+ <select id="rsub"></select>
+ <input id="rsearch" type="search" placeholder="Search name"><div id="rl"></div></section>
+</main>
+<a id="pm" class="fab" target="_blank" rel="noopener">PM the Mayor</a>
+<nav><button data-v="home" class="on">Home</button><button data-v="todo">To-Do</button><button data-v="study">Reviewer</button><button data-v="kiosk">Kiosk</button><button data-v="class">Class</button></nav>
+<dialog id="setup">
+ <div id="s1"><img class="mas c" src="mascot-sun.png" alt=""><h2>Welcome to ECE 1A</h2><p class="mut">Two quick steps. Everything stays on your phone.</p>
+  <label>Your name<select id="sn"></select></label>
+  <div class="nb"></div><button id="nx" class="btn" type="button">Next</button></div>
+ <div id="s2" hidden><h2>Pick your schedule</h2><p class="mut">Tap each one to preview it first.</p>
+  <div class="seg" id="pp"></div><div id="cu" hidden></div><p id="ph"></p><div id="pvw"></div>
+  <div class="row"><button id="bk" class="btn alt" type="button">Back</button><button id="ok" class="btn" type="button">Confirm My Schedule</button></div></div>
+</dialog>
+<dialog id="cfg"><h2>Settings</h2><div class="nb"></div>
+ <button class="btn alt inst" type="button">Install app</button>
+ <div class="nb"><b>Class updates</b><small>Paste the update link or code from the secretary.</small><input id="cin" placeholder="Paste here"><button id="capply" class="btn alt" type="button">Apply update</button></div>
+ <button id="edit" class="btn alt" type="button">Change my schedule</button><button id="cx" class="btn" type="button">Close</button></dialog>
+<dialog id="cd"><h2>Edit card</h2>
+ <label>Nickname or motto<input id="cn" maxlength="30"></label><label>Birthday<input id="cb" type="date"></label><label>Photo<input id="cf" type="file" accept="image/*"></label>
+ <div id="cc" class="dots"></div>
+ <div class="seg" id="ca"><button data-a="0" type="button">Sun dragon</button><button data-a="1" type="button">Calc dragon</button><button data-a="2" type="button">My photo</button></div>
+ <button id="cdone" class="btn" type="button">Done</button></dialog>
+<div id="toast" role="status"></div>
+<script src="data.js"></script><script src="app.js"></script>
+</body></html>
