@@ -4,7 +4,8 @@ let P=LS.g('profile',null),ST=LS.g('st',{}),MY=LS.g('my',[]),ATT=LS.g('att',{}),
 mo.setDate(1);
 const DAYS=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'],DS=DAYS.map(d=>d.slice(0,3));
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-const subj=id=>SUBJECTS.find(s=>s.id===id)||{code:'Personal',title:'Personal',prof:''};
+const subj=id=>SUBJECTS.find(s=>s.id===id)||(id==='all'?{code:'Class',title:'Whole class',prof:''}:{code:'Personal',title:'Personal',prof:''});
+const lk=s=>esc(s).replace(/https?:\/\/\S+/g,u=>`<a href="${u}" target="_blank" rel="noopener">Open link</a>`);
 const t12=t=>{const[h,m]=t.split(':').map(Number);return(h%12||12)+':'+String(m).padStart(2,'0')+(h<12?' AM':' PM')};
 const dt=d=>new Date(d).toLocaleString([],{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'});
 const mm=t=>{const[h,m]=t.split(':').map(Number);return h*60+m},p2=n=>String(n).padStart(2,'0');
@@ -83,7 +84,7 @@ $('#cx').onclick=()=>$('#cfg').close();
 $('#edit').onclick=()=>{$('#cfg').close();openSetup()};
 
 // ---------- Tasks ----------
-const allTasks=()=>[...TASKS,...MY].filter(t=>t.sub==='me'||mySubs().includes(t.sub)).sort((a,b)=>a.due.localeCompare(b.due));
+const allTasks=()=>[...TASKS,...MY].filter(t=>t.sub==='me'||t.sub==='all'||mySubs().includes(t.sub)).sort((a,b)=>a.due.localeCompare(b.due));
 const stOf=t=>ST[t.id]||'p',soon=t=>stOf(t)==='p'&&new Date(t.due)-Date.now()<2592e5;
 const LB={p:'Pending',g:'In progress',d:'Done'};
 const FT={all:()=>true,p:t=>stOf(t)==='p',g:t=>stOf(t)==='g'||soon(t),d:t=>stOf(t)==='d'};
@@ -92,7 +93,7 @@ function renderTodo(){
  $('#pct').textContent=pct+'% done';$('#bar').style.width=pct+'%';
  $('#ts').innerHTML=[['all','All'],['p','Pending'],['g','In Progress / Due Soon'],['d','Done']].map(([k,n])=>`<button data-k="${k}" class="${tab===k?'on':''}">${n} <span class="tag">${c[k]}</span></button>`).join('');
  $$('#ts button').forEach(b=>b.onclick=()=>{tab=b.dataset.k;renderTodo()});
- $('#tl').innerHTML=l.filter(FT[tab]).map(t=>`<div class="item ${stOf(t)==='d'?'done':''}"><span><b>${esc(t.title)}</b><br><small>${esc(subj(t.sub).code)} | ${t.type} | due ${dt(t.due)}${soon(t)?' | due soon':''}</small></span><span>${t.mine?`<button class="x" data-x="${t.id}" aria-label="Delete">×</button>`:''}<button class="st ${stOf(t)}" data-id="${t.id}">${LB[stOf(t)]}</button></span></div>`).join('')
+ $('#tl').innerHTML=l.filter(FT[tab]).map(t=>`<div class="item ${stOf(t)==='d'?'done':''}"><span><b>${esc(t.title)}</b><br>${t.note?`<small>${lk(t.note)}</small><br>`:''}<small>${esc(subj(t.sub).code)} | ${t.type} | due ${dt(t.due)}${soon(t)?' | due soon':''}</small></span><span>${t.mine?`<button class="x" data-x="${t.id}" aria-label="Delete">×</button>`:''}<button class="st ${stOf(t)}" data-id="${t.id}">${LB[stOf(t)]}</button></span></div>`).join('')
   ||`<div class="empty"><img src="mascot-calc.png" alt=""><p><b>${l.length&&c.d===l.length?'All tasks done!':'Nothing here.'}</b></p></div>`;
  $$('#tl .st').forEach(b=>b.onclick=()=>{ST[b.dataset.id]={p:'g',g:'d',d:'p'}[ST[b.dataset.id]||'p'];LS.s('st',ST);renderTodo();renderHome()});
  $$('#tl .x').forEach(b=>b.onclick=()=>{MY=MY.filter(t=>t.id!==b.dataset.x);LS.s('my',MY);renderTodo();renderHome()})}
@@ -217,18 +218,18 @@ function renderPts(){
 // ---------- My Card ----------
 const gn=n=>(n.split(',')[1]||n).trim().split(' ')[0],disp=n=>n.includes(',')?n.split(',')[1].trim()+' '+n.split(',')[0]:n;
 const THEMES=['#EFEDF3','#EBDDF6','#DDE0F4','#DDF1E6','#F9E0E6','#FBE6D6','#F8F0CC','#E8E2D4'],ARTS=['mascot-sun.png','mascot-calc.png'];
-let CARD=LS.g('card',{c:1,art:0,nick:'',bd:'',photo:''});
+let CARD=LS.g('card',{c:1,art:0,nick:'',bd:'',photo:'',sid:''});
 const saveCard=()=>{LS.s('card',CARD);renderCard()};
 function renderCard(){
  const c=CARD,art=c.art===2&&c.photo?c.photo:ARTS[c.art<2?c.art:0],b=c.bd?new Date(c.bd+'T00:00').toLocaleDateString([],{month:'long',day:'numeric'}):'Not set';
- $('#mc').innerHTML=`<div class="mc" style="background:${THEMES[c.c]}"><div class="mbar"><i></i><span>${esc(gn(P.name).toLowerCase())}.exe</span><button class="pill" id="ce" type="button">Edit card</button></div><div class="mbody"><img class="mph" src="${art}" alt=""><div class="mi"><div class="mt">ECE 1A ✦<br>Student</div><div class="mf"><small>Full Name</small><b>${esc(disp(P.name))}</b></div><div class="mf2"><div class="mf"><small>Schedule</small><b>${P.preset==='X'?'Custom':PRESETS[P.preset].name}</b></div><div class="mf"><small>Birthday</small><b>${b}</b></div></div></div></div>${c.nick?`<p class="mq">${esc(c.nick)}</p>`:''}</div>`;
+ $('#mc').innerHTML=`<div class="mc" style="background:${THEMES[c.c]}"><div class="mbar"><i></i><span>${esc(gn(P.name).toLowerCase())}.exe</span><button class="pill" id="ce" type="button">Edit card</button></div><div class="mbody"><img class="mph" src="${art}" alt=""><div class="mi"><div class="mt">ECE 1A ✦<br>Student</div><div class="mf"><small>Full Name</small><b>${esc(disp(P.name))}</b></div><div class="mf2"><div class="mf"><small>Student ID</small><b>${esc(c.sid||'Add in Edit card')}</b></div><div class="mf"><small>Birthday</small><b>${b}</b></div></div></div></div>${c.nick?`<p class="mq">${esc(c.nick)}</p>`:''}</div>`;
  $('#ce').onclick=openCard}
-function openCard(){$('#cn').value=CARD.nick;$('#cb').value=CARD.bd;drawCC();$('#cd').showModal()}
+function openCard(){$('#cn').value=CARD.nick;$('#cb').value=CARD.bd;$('#cs').value=CARD.sid||'';drawCC();$('#cd').showModal()}
 function drawCC(){
  $('#cc').innerHTML=THEMES.map((t,i)=>`<button type="button" data-i="${i}" class="${CARD.c===i?'on':''}" style="background:${t}" aria-label="Color ${i+1}"></button>`).join('');
  $$('#cc button').forEach(b=>b.onclick=()=>{CARD.c=+b.dataset.i;saveCard();drawCC()});
  $$('#ca button').forEach(b=>{b.classList.toggle('on',+b.dataset.a===CARD.art);b.onclick=()=>{if(+b.dataset.a===2&&!CARD.photo){alert('Choose a photo first');return}CARD.art=+b.dataset.a;saveCard();drawCC()}})}
-$('#cn').oninput=()=>{CARD.nick=$('#cn').value;saveCard()};$('#cb').onchange=()=>{CARD.bd=$('#cb').value;saveCard()};
+$('#cn').oninput=()=>{CARD.nick=$('#cn').value;saveCard()};$('#cs').oninput=()=>{CARD.sid=$('#cs').value.trim();saveCard()};$('#cb').onchange=()=>{CARD.bd=$('#cb').value;saveCard()};
 $('#cf').onchange=e=>{const f=e.target.files[0];if(!f)return;const im=new Image();
  im.onload=()=>{const cv=document.createElement('canvas');cv.width=240;cv.height=300;const x=cv.getContext('2d'),s=Math.max(240/im.width,300/im.height);x.drawImage(im,(240-im.width*s)/2,(300-im.height*s)/2,im.width*s,im.height*s);CARD.photo=cv.toDataURL('image/jpeg',.8);CARD.art=2;saveCard();drawCC()};im.src=URL.createObjectURL(f)};
 $('#cdone').onclick=()=>$('#cd').close();

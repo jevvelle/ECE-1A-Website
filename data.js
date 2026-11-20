@@ -46,13 +46,22 @@ const SLOTS=[
  {sub:"ECE101L",s:"RBC",day:6,start:"10:00",end:"13:00",room:"TBA"}
 ];
 
-// Mayor-posted tasks. type: "task" | "quiz" | "exam" | "lab" (quiz, exam and lab feed the countdown). due: YYYY-MM-DDTHH:MM
+// Class tasks. sub is a subject id, or "all" for the whole class. type: "task" | "quiz" | "exam" | "lab" (quiz, exam and lab feed the countdown).
+// due is local time YYYY-MM-DDTHH:MM. note is optional small text under the title (links become "Open link").
 const TASKS=[
- {id:"t1",sub:"COE104",type:"quiz",title:"Quiz: Integration techniques",due:"2026-11-24T10:00"},
- {id:"t2",sub:"ECE103L",type:"lab",title:"Lab report: Coulomb's law",due:"2026-11-26T07:00"},
- {id:"t3",sub:"ECE103",type:"exam",title:"Physics 2 Midterm",due:"2026-12-01T08:30"},
- {id:"t4",sub:"AE101",type:"task",title:"Reflection essay",due:"2026-11-23T10:00"},
- {id:"t5",sub:"ECE101L",type:"task",title:"CAD plate 3",due:"2026-11-21T07:00"}
+ {id:"n1",sub:"all",type:"task",title:"Bring your signed COR",due:"2026-11-23T08:00",note:"Still unsigned? You may bring it next week."},
+ {id:"n2",sub:"TCW101",type:"task",title:"Pay ₱5 for the TCW index card",due:"2026-11-27T17:00",note:"Pay Hussein. Collection runs from Sat Nov 21 until next week."},
+ {id:"n3",sub:"PE11",type:"task",title:"Pay ₱10 for the PATHFit activity card",due:"2026-11-27T17:00",note:"Collection runs from Sat Nov 21 until next week. Activity TBA."},
+ {id:"n4",sub:"COE105",type:"task",title:"Make a white index card (1/8)",due:"2026-11-26T10:00",note:"1x1 photo upper right, name (surname first), year and section, MFE grade upper left."},
+ {id:"n5",sub:"COE105",type:"task",title:"Print declaration form, bring protractor, ruler, pencil",due:"2026-11-26T10:00"},
+ {id:"n6",sub:"COE105L",type:"task",title:"Bring a green ballpen (0.3 to 0.4) for lab reports",due:"2026-11-24T17:00"},
+ {id:"n7",sub:"NSTP11",type:"quiz",title:"Quiz expected: NSTP Primer",due:"2026-11-26T14:00",note:"Next week or the week after."},
+ {id:"n8",sub:"NSTP11",type:"task",title:"Prepare a triangular bandage and mouth guard",due:"2026-12-03T14:00",note:"Bandage size: 40x40x58 inches."},
+ {id:"n9",sub:"STS101",type:"task",title:"Review orientation slides, read ahead",due:"2026-11-23T17:00",note:"Next topic: definition, kinds and types of science, technology and society."},
+ {id:"n10",sub:"STS101",type:"task",title:"Join the STS Microsoft Teams",due:"2026-11-23T17:00",note:"Class code: qkyruu3"},
+ {id:"n11",sub:"STS101",type:"task",title:"Register on PLUS BANK",due:"2026-11-23T17:00",note:"For recitation, attendance and plus points: https://plus-bank-supabase-test.sirdancarlodelavega.workers.dev/"},
+ {id:"n12",sub:"ECE103L",type:"lab",title:"Experiment 1: answer and submit",due:"2026-11-23T07:00",note:"Yellow plastic envelope, one per group."},
+ {id:"n13",sub:"ECE102",type:"task",title:"No MSE class on Tuesday",due:"2026-11-24T07:00"}
 ];
 
 // CLASS LIST: "id|Surname, First". The id is the list position. Do NOT put real student numbers here, this file is public.
