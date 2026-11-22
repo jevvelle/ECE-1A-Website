@@ -77,7 +77,7 @@ const MASTER=`001|Abelardo, Chariz L.
 011|Concepcion, Jay-R Y.
 012|Constantino, Edward Ken Shinta S.
 013|Cruz, Jeremy C.
-014|Cruz, Liah Krish Rhianne Q.
+014|Cruz, Liah Krish Rhianne O.
 015|Cutanda, Vhinz Franscois L.
 016|De Jesus, Hussein C.
 017|De Leon, Nap Jenard L.
@@ -105,7 +105,7 @@ const MASTER=`001|Abelardo, Chariz L.
 039|Metiam, Kyshaun Z.
 040|Norona, Ruel Juro
 041|Pagdanganan, France Avien Scierell I.
-042|Parole, Jaime S.
+042|Parole, Jaime Antonio S.
 043|Pulumbarit, Pierre Gabriel M.
 044|Rafa, Jewelle Riyanne N.
 045|Reyes, Gerald M.
