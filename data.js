@@ -2,7 +2,7 @@
 const F=(n,d)=>`<span class="f"><i>${n}</i><b>${d}</b></span>`; // stacked fraction helper
 
 const CONFIG={
- secretaryPin:"1234"                               // Secretary's Kiosk PIN, change it
+ secretaryPin:"9351"                               // Secretary's Kiosk PIN, change it
 };
 
 // R = Regular, B = Schedule B, C = Schedule C (Regular minus ECE 102)
