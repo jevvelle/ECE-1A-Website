@@ -1,5 +1,5 @@
 // Bump CACHE whenever you change any file.
-const CACHE='class-portal-v7';
+const CACHE='class-portal-v8';
 const ASSETS=['./','./index.html','./styles.css','./app.js','./data.js','./manifest.json','./icon-192.png','./icon-512.png','./mascot-sun.png','./mascot-calc.png','./fonts/jakarta-500.woff2','./fonts/jakarta-600.woff2','./fonts/jakarta-700.woff2'];
 self.addEventListener('install',e=>{e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS)));self.skipWaiting()});
 self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(x=>x!==CACHE).map(x=>caches.delete(x)))));self.clients.claim()});

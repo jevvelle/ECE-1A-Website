@@ -92,3 +92,4 @@ header{gap:6px}.brand{font-size:16px}.pill{font-size:12px;padding:6px 10px}
 .mf2{display:grid;grid-template-columns:1fr 1fr;gap:6px}
 .mq{margin:0;padding:0 12px 10px;font-size:13px;text-align:center;color:var(--mut)}
 .dots{display:flex;gap:8px;margin:10px 0;flex-wrap:wrap}.dots button{width:32px;height:32px;border-radius:50%;border:2px solid var(--bd);padding:0}.dots .on{border-color:var(--pri);box-shadow:inset 0 0 0 2px #fff}
+.mini{display:flex;justify-content:space-between;gap:10px;padding:6px 0;border-top:1px solid var(--bd);font-size:14px}.mini:first-of-type{margin-top:6px}.mini small{white-space:nowrap}

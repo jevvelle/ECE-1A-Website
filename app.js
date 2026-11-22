@@ -33,27 +33,31 @@ $$('#tv button').forEach(b=>b.onclick=()=>{vm=b.dataset.m;$$('#tv button').forEa
 // ---------- Reminders (Notification API through the service worker) ----------
 const NB=`<div class="row2"><div><b>Deadline reminders</b><small>24 hours and 2 hours before each unfinished task</small></div><button class="sw" type="button" role="switch" aria-label="Enable Deadline Reminders"></button></div>
 <button class="pill tst" type="button">Send Test Notification</button>
-<small>On iPhone: tap Share → Add to Home Screen first to enable notifications.</small><small class="nmsg"></small>`;
+<small>On iPhone: tap Share → Add to Home Screen first to enable notifications.</small><small class="nst"></small><small class="nmsg"></small><small>Reminders appear while the app is open or running in the background.</small>`;
 const canN=()=>'Notification' in window&&'serviceWorker' in navigator;
 const nOn=()=>LS.g('notif',false)&&canN()&&Notification.permission==='granted';
 const nMsg=t=>$$('.nmsg').forEach(e=>e.textContent=t);
-const nDraw=()=>$$('.sw').forEach(b=>{b.classList.toggle('on',nOn());b.setAttribute('aria-checked',nOn())});
-async function fire(title,body,tag){const r=await navigator.serviceWorker.ready;return r.showNotification(title,{body,tag,icon:'icon-192.png',badge:'icon-192.png'})}
+const nSt=()=>inApp?'Notifications do not work inside Messenger. Open this link in Chrome.':!canN()?'Not supported in this browser. On iPhone, add the app to your Home Screen first.':Notification.permission==='granted'?'Allowed on this device.':Notification.permission==='denied'?'Blocked. Allow notifications for this site in your browser settings.':'Not asked yet.';
+const nDraw=()=>{$$('.sw').forEach(b=>{b.classList.toggle('on',nOn());b.setAttribute('aria-checked',nOn())});$$('.nst').forEach(e=>e.textContent=nSt())};
+async function fire(title,body,tag){
+ const o={body,tag,icon:'icon-192.png',badge:'icon-192.png'};
+ try{const r=await Promise.race([navigator.serviceWorker.ready,new Promise((_,j)=>setTimeout(j,3000))]);return await r.showNotification(title,o)}
+ catch{new Notification(title,o)}}
 async function ask(){
- if(!canN()){nMsg('This browser cannot show notifications. On iPhone, add the app to your Home Screen first.');return false}
+ if(inApp||!canN()){nMsg(nSt());return false}
  const p=Notification.permission==='granted'?'granted':await Notification.requestPermission();
  if(p!=='granted'){nMsg('Notifications are blocked. Allow them in your browser or phone settings.');return false}return true}
 async function toggleN(){
  if(nOn()){LS.s('notif',false);nDraw();nMsg('Reminders off.');return}
  if(await ask()){LS.s('notif',true);nMsg('Reminders on. They show up when the app is open or running in the background.');checkN()}nDraw()}
-async function testN(){if(await ask()){LS.s('notif',true);nDraw();await fire('ECE 1A test','Reminders are working on this device.','test');nMsg('Test sent.')}}
+async function testN(){if(await ask()){LS.s('notif',true);nDraw();try{await fire('ECE 1A test','Reminders are working on this device.','test');nMsg('Test sent. Nothing showed up? Check that Do Not Disturb is off.')}catch(e){nMsg('Could not show a notification: '+(e&&e.message||'unknown error'))}}}
 function checkN(){
  if(!P||!nOn())return;const done=LS.g('notified',[]);let ch=false;
- allTasks().filter(t=>stOf(t)!=='d').forEach(t=>{
+ allTasks().filter(t=>t.due&&stOf(t)!=='d').forEach(t=>{
   const h=(new Date(t.due)-Date.now())/36e5;if(h<=0||h>24)return;
   const k=t.id+(h<=2?':2':':24');if(done.includes(k))return;
   done.push(k);if(h<=2)done.push(t.id+':24');ch=true;
-  fire(h<=2?'Due in under 2 hours':'Due within 24 hours',`${t.title} (${subj(t.sub).code}), ${dt(t.due)}`,k)});
+  fire(h<=2?'Due in under 2 hours':'Due within 24 hours',`${t.title} (${subj(t.sub).code}), ${dt(t.due)}`,k).catch(()=>{})});
  if(ch)LS.s('notified',[...new Set(done)])}
 document.addEventListener('click',e=>{if(e.target.closest('.sw'))toggleN();else if(e.target.closest('.tst'))testN()});
 document.addEventListener('visibilitychange',()=>!document.hidden&&checkN());
@@ -84,8 +88,8 @@ $('#cx').onclick=()=>$('#cfg').close();
 $('#edit').onclick=()=>{$('#cfg').close();openSetup()};
 
 // ---------- Tasks ----------
-const allTasks=()=>[...TASKS,...MY].filter(t=>t.sub==='me'||t.sub==='all'||mySubs().includes(t.sub)).sort((a,b)=>a.due.localeCompare(b.due));
-const stOf=t=>ST[t.id]||'p',soon=t=>stOf(t)==='p'&&new Date(t.due)-Date.now()<2592e5;
+const allTasks=()=>[...TASKS,...MY].filter(t=>t.sub==='me'||t.sub==='all'||mySubs().includes(t.sub)).sort((a,b)=>(a.due||'9999').localeCompare(b.due||'9999'));
+const stOf=t=>ST[t.id]||'p',soon=t=>t.due&&stOf(t)==='p'&&new Date(t.due)-Date.now()<2592e5;
 const LB={p:'Pending',g:'In progress',d:'Done'};
 const FT={all:()=>true,p:t=>stOf(t)==='p',g:t=>stOf(t)==='g'||soon(t),d:t=>stOf(t)==='d'};
 function renderTodo(){
@@ -93,7 +97,7 @@ function renderTodo(){
  $('#pct').textContent=pct+'% done';$('#bar').style.width=pct+'%';
  $('#ts').innerHTML=[['all','All'],['p','Pending'],['g','In Progress / Due Soon'],['d','Done']].map(([k,n])=>`<button data-k="${k}" class="${tab===k?'on':''}">${n} <span class="tag">${c[k]}</span></button>`).join('');
  $$('#ts button').forEach(b=>b.onclick=()=>{tab=b.dataset.k;renderTodo()});
- $('#tl').innerHTML=l.filter(FT[tab]).map(t=>`<div class="item ${stOf(t)==='d'?'done':''}"><span><b>${esc(t.title)}</b><br>${t.note?`<small>${lk(t.note)}</small><br>`:''}<small>${esc(subj(t.sub).code)} | ${t.type} | due ${dt(t.due)}${soon(t)?' | due soon':''}</small></span><span>${t.mine?`<button class="x" data-x="${t.id}" aria-label="Delete">×</button>`:''}<button class="st ${stOf(t)}" data-id="${t.id}">${LB[stOf(t)]}</button></span></div>`).join('')
+ $('#tl').innerHTML=l.filter(FT[tab]).map(t=>`<div class="item ${stOf(t)==='d'?'done':''}"><span><b>${esc(t.title)}</b><br>${t.note?`<small>${lk(t.note)}</small><br>`:''}<small>${esc(subj(t.sub).code)} | ${t.type} | ${t.due?'due '+dt(t.due):'no deadline yet'}${soon(t)?' | due soon':''}</small></span><span>${t.mine?`<button class="x" data-x="${t.id}" aria-label="Delete">×</button>`:''}<button class="st ${stOf(t)}" data-id="${t.id}">${LB[stOf(t)]}</button></span></div>`).join('')
   ||`<div class="empty"><img src="mascot-calc.png" alt=""><p><b>${l.length&&c.d===l.length?'All tasks done!':'Nothing here.'}</b></p></div>`;
  $$('#tl .st').forEach(b=>b.onclick=()=>{ST[b.dataset.id]={p:'g',g:'d',d:'p'}[ST[b.dataset.id]||'p'];LS.s('st',ST);renderTodo();renderHome()});
  $$('#tl .x').forEach(b=>b.onclick=()=>{MY=MY.filter(t=>t.id!==b.dataset.x);LS.s('my',MY);renderTodo();renderHome()})}
@@ -104,10 +108,11 @@ $('#addf').onsubmit=e=>{e.preventDefault();
 // ---------- Home ----------
 function renderHome(){
  renderPts();
- const t=allTasks().find(t=>t.type!=='task'&&!t.mine&&stOf(t)!=='d'&&new Date(t.due)>Date.now());
+ const t=allTasks().find(t=>t.type!=='task'&&!t.mine&&t.due&&stOf(t)!=='d'&&new Date(t.due)>Date.now());
  if(t){const ms=new Date(t.due)-Date.now();$('#count').innerHTML=`<small>NEXT UP</small><br>${esc(t.title)}<span class="big">${Math.floor(ms/864e5)}d ${Math.floor(ms%864e5/36e5)}h ${Math.floor(ms%36e5/6e4)}m</span><small>${esc(subj(t.sub).code)} | ${dt(t.due)}</small>`}
  else $('#count').textContent='No upcoming quizzes, labs or exams.';
- const all=allTasks();
+ const all=allTasks(),ds=all.filter(t=>t.due&&stOf(t)!=='d'&&new Date(t.due)>Date.now()&&new Date(t.due)-Date.now()<2592e5);
+ $('#ds').innerHTML=ds.length?`<div class="card"><b>Due in the next 3 days</b>${ds.slice(0,4).map(t=>`<div class="mini"><span>${esc(t.title)}</span><small>${dt(t.due)}</small></div>`).join('')}</div>`:'';
  $('#sc').innerHTML=mySubs().map((id,i)=>{const u=subj(id),ts=all.filter(t=>t.sub===id),d=ts.filter(t=>stOf(t)==='d').length;
   return`<div class="sc c${i%4}"><small>${u.code}</small><b>${esc(u.title)}</b><div class="bar"><i style="width:${ts.length?d/ts.length*100:0}%"></i></div><small>${d} of ${ts.length} tasks done</small></div>`}).join('')}
 function renderTT(){
@@ -125,10 +130,10 @@ function month(sl){
  const y=mo.getFullYear(),m=mo.getMonth(),off=(new Date(y,m,1).getDay()+6)%7,n=new Date(y,m+1,0).getDate(),tk=allTasks(),now=new Date(),ts=`${now.getFullYear()}-${p2(now.getMonth()+1)}-${p2(now.getDate())}`;
  if(!md||!md.startsWith(`${y}-${p2(m+1)}`))md=ts.startsWith(`${y}-${p2(m+1)}`)?ts:`${y}-${p2(m+1)}-01`;
  let h=`<div class="mh"><button class="x" id="mp">‹</button><b>${mo.toLocaleDateString([],{month:'long',year:'numeric'})}</b><button class="x" id="mn">›</button></div><div class="mg">`+'MTWTFSS'.split('').map(c=>`<small style="text-align:center">${c}</small>`).join('')+'<span></span>'.repeat(off);
- for(let d=1;d<=n;d++){const k=`${y}-${p2(m+1)}-${p2(d)}`,dow=new Date(y,m,d).getDay(),hasC=sl.some(s=>s.day===dow),hasT=tk.some(t=>t.due.startsWith(k)),st=sl.filter(s=>s.day===dow).map(s=>attOf(s.sub,k)).filter(Boolean);
+ for(let d=1;d<=n;d++){const k=`${y}-${p2(m+1)}-${p2(d)}`,dow=new Date(y,m,d).getDay(),hasC=sl.some(s=>s.day===dow),hasT=tk.some(t=>t.due&&t.due.startsWith(k)),st=sl.filter(s=>s.day===dow).map(s=>attOf(s.sub,k)).filter(Boolean);
   h+=`<button data-d="${k}" class="${k===md?'sel':''} ${k===ts?'today':''}">${d}<i>${hasC?'<u class="c"></u>':''}${hasT?'<u class="t"></u>':''}${st.includes('Absent')?'<u class="no"></u>':st.length?'<u class="ok"></u>':''}</i></button>`}
  h+='</div>';
- h+='<small>Lavender: class | Blue: task due | Green: present | Red: absent</small>';const dd=new Date(md+'T00:00'),cl=sl.filter(s=>s.day===dd.getDay()).sort((a,b)=>a.start.localeCompare(b.start)),dl=tk.filter(t=>t.due.startsWith(md));
+ h+='<small>Lavender: class | Blue: task due | Green: present | Red: absent</small>';const dd=new Date(md+'T00:00'),cl=sl.filter(s=>s.day===dd.getDay()).sort((a,b)=>a.start.localeCompare(b.start)),dl=tk.filter(t=>t.due&&t.due.startsWith(md));
  h+=`<div class="day">${dd.toLocaleDateString([],{weekday:'long',month:'long',day:'numeric'})}</div>`+cl.map(s=>slotItem(s,md)).join('')+dl.map(t=>`<div class="item"><span><b>${esc(t.title)}</b><br><small>${esc(subj(t.sub).code)} | ${t.type} | due ${dt(t.due)}</small></span><span class="tag">${LB[stOf(t)]}</span></div>`).join('')||'';
  if(!cl.length&&!dl.length)h+='<p class="mut">Nothing scheduled.</p>';
  $('#tt').innerHTML=h;
@@ -138,9 +143,9 @@ function month(sl){
 // ---------- Reviewer ----------
 function renderVault(){
  const s=$('#vs').value,p=$('#vp').value;
- $('#vl').innerHTML=VAULT.filter(v=>(!s||v.sub===s)&&(!p||v.period===p)).map(v=>`<div class="card"><h3>${esc(v.title)}</h3><small>${subj(v.sub).code}</small><span class="tag">${v.period}</span>${v.body}${v.link?`<p><a href="${esc(v.link)}" download>Download material</a></p>`:''}</div>`).join('')||'<p class="mut">No cards match.</p>'}
+ $('#vl').innerHTML=VAULT.filter(v=>(!s||v.sub===s)&&(!p||v.period===p)).map(v=>`<div class="card"><h3>${esc(v.title)}</h3><small>${subj(v.sub).code}</small><span class="tag">${v.period}</span>${v.body}${v.link?`<p><a href="${esc(v.link)}" download>Download material</a></p>`:''}</div>`).join('')||(VAULT.length?'<p class="mut">No cards match.</p>':'<div class="empty"><img src="mascot-calc.png" alt=""><p><b>Reviewers coming soon.</b></p></div>')}
 $('#vs').innerHTML='<option value="">All subjects</option>'+SUBJECTS.map(s=>`<option value="${s.id}">${s.code}</option>`).join('');
-$('#vp').innerHTML='<option value="">All periods</option>'+['Prelims','Midterms','Finals'].map(p=>`<option>${p}</option>`).join('');
+$('#vp').innerHTML='<option value="">All periods</option>'+['Quiz','Midterms','Finals'].map(p=>`<option>${p}</option>`).join('');
 $('#vs').onchange=$('#vp').onchange=renderVault;
 
 // ---------- Secretary's Kiosk ----------
@@ -263,7 +268,6 @@ function renderAll(){
  $('#ns').innerHTML='<option value="me">Personal</option>'+mySubs().map(id=>`<option value="${id}">${subj(id).code}</option>`).join('');
  renderCard();renderHome();renderTT();renderTodo()}
 $$('.nb').forEach(e=>e.innerHTML=NB);nDraw();
-$('#pm').href=CONFIG.mayorMessenger;
 renderVault();renderKiosk();renderRoster();instDraw();hashIn();addEventListener('hashchange',hashIn);
 if(P){renderAll();checkN();if(!P.me)openSetup()}else openSetup();
 setInterval(()=>{if(P){renderHome();checkN()}},6e4);
