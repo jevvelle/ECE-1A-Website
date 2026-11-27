@@ -223,17 +223,33 @@ function renderPts(){
 // ---------- My Card ----------
 const gn=n=>(n.split(',')[1]||n).trim().split(' ')[0],disp=n=>n.includes(',')?n.split(',')[1].trim()+' '+n.split(',')[0]:n;
 const THEMES=['#EFEDF3','#EBDDF6','#DDE0F4','#DDF1E6','#F9E0E6','#FBE6D6','#F8F0CC','#E8E2D4'],ARTS=['mascot-sun.png','mascot-calc.png'];
-let CARD=LS.g('card',{c:1,art:0,nick:'',bd:'',photo:'',sid:''});
+const MOODS=[['happy','Happy'],['love','Love'],['excited','Excited'],['tired','Tired'],['sad','Sad'],['angry','Angry']];
+function dragon(m){
+ const ink='#3A2A5A',ln=(p,c=ink,w=2.6)=>`<path d="${p}" fill="none" stroke="${c}" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round"/>`,dot=(x,y=57,r=3.4)=>`<circle cx="${x}" cy="${y}" r="${r}" fill="${ink}"/>`,
+ star=(x,y,s)=>`<path d="M${x} ${y-s}L${x+s*.3} ${y-s*.3}L${x+s} ${y}L${x+s*.3} ${y+s*.3}L${x} ${y+s}L${x-s*.3} ${y+s*.3}L${x-s} ${y}L${x-s*.3} ${y-s*.3}Z" fill="#F5B841"/>`,
+ heart=x=>`<path d="M${x} 62C${x-6} 57 ${x-5} 52 ${x-2} 52C${x} 52 ${x} 54 ${x} 54C${x} 54 ${x} 52 ${x+2} 52C${x+5} 52 ${x+6} 57 ${x} 62Z" fill="#E86A8A"/>`,
+ blush=(c='#F8B7C8')=>`<ellipse cx="25" cy="65" rx="5" ry="3.2" fill="${c}"/><ellipse cx="75" cy="65" rx="5" ry="3.2" fill="${c}"/>`;
+ const F={
+  happy:ln('M31 58Q36 51 41 58M59 58Q64 51 69 58')+ln('M44 65Q50 72 56 65')+blush(),
+  love:heart(36)+heart(64)+ln('M44 66Q47 70 50 66Q53 70 56 66')+blush(),
+  excited:dot(35,57,4.2)+dot(65,57,4.2)+'<circle cx="36.5" cy="55.5" r="1.4" fill="#fff"/><circle cx="66.5" cy="55.5" r="1.4" fill="#fff"/>'+`<path d="M43 64Q50 79 57 64Z" fill="#E88BA3" stroke="${ink}" stroke-width="2.4" stroke-linejoin="round"/>`+star(88,26,8)+star(11,28,5)+blush(),
+  tired:ln('M30 58H42M58 58H70')+ln('M46 67H54')+ln('M84 28H91L84 37H91',ink,2)+ln('M90 16H94L90 21H94',ink,1.6),
+  sad:dot(36)+dot(64)+ln('M29 50L42 46M71 50L58 46')+ln('M44 70Q50 64 56 70')+'<path d="M36 62Q32 68 36 71Q40 68 36 62Z" fill="#7FB6E8"/>',
+  angry:dot(37,59)+dot(63,59)+ln('M28 48L43 54M72 48L57 54')+ln('M44 71Q50 66 56 71')+blush('#F28B8B')+ln('M86 6L88 16M92 6L94 16M83 9H97M83 13H97','#E24A4A',2.2)
+ };
+ return`<svg viewBox="0 0 100 100" role="img" aria-label="${m}"><path d="M27 43Q16 36 22 17Q36 24 43 35" fill="#E6D4F6" stroke="${ink}" stroke-width="2.6" stroke-linejoin="round"/><path d="M73 43Q84 36 78 17Q64 24 57 35" fill="#E6D4F6" stroke="${ink}" stroke-width="2.6" stroke-linejoin="round"/><path d="M45 36L50 26L55 36" fill="#F5B841" stroke="${ink}" stroke-width="2.2" stroke-linejoin="round"/><path d="M16 64C16 42 30 35 50 35C70 35 84 42 84 64C84 75 76 82 65 82H35C24 82 16 75 16 64Z" fill="#E6D4F6" stroke="${ink}" stroke-width="2.8" stroke-linejoin="round"/>${F[m]||F.happy}</svg>`}
+let CARD=LS.g('card',{c:1,art:0,nick:'',bd:'',photo:'',sid:'',mood:''});
 const saveCard=()=>{LS.s('card',CARD);renderCard()};
 function renderCard(){
- const c=CARD,art=c.art===2&&c.photo?c.photo:ARTS[c.art<2?c.art:0],b=c.bd?new Date(c.bd+'T00:00').toLocaleDateString([],{month:'long',day:'numeric'}):'Not set';
- $('#mc').innerHTML=`<div class="mc" style="background:${THEMES[c.c]}"><div class="mbar"><i></i><span>${esc(gn(P.name).toLowerCase())}.exe</span><button class="pill" id="ce" type="button">Edit card</button></div><div class="mbody"><img class="mph" src="${art}" alt=""><div class="mi"><div class="mt">ECE 1A ✦<br>Student</div><div class="mf"><small>Full Name</small><b>${esc(disp(P.name))}</b></div><div class="mf2"><div class="mf"><small>Student ID</small><b>${esc(c.sid||'Add in Edit card')}</b></div><div class="mf"><small>Birthday</small><b>${b}</b></div></div></div></div>${c.nick?`<p class="mq">${esc(c.nick)}</p>`:''}</div>`;
- $('#ce').onclick=openCard}
+ const c=CARD,ph=c.art===2&&c.photo,art=ph?c.photo:ARTS[c.art<2?c.art:0],b=c.bd?new Date(c.bd+'T00:00').toLocaleDateString([],{month:'long',day:'numeric'}):'Not set',ml=(MOODS.find(x=>x[0]===c.mood)||[])[1];
+ $('#mc').innerHTML=`<div class="mc" style="background:${THEMES[c.c]}"><div class="mbar"><i></i><span>${esc(gn(P.name).toLowerCase())}.exe</span><button class="pill" id="ce" type="button">Edit card</button></div><div class="mbody"><img class="mph ${ph?'cv':''}" src="${art}" alt=""><div class="mi"><div class="mt">ECE 1A<br>Student</div><div class="mf"><small>Full Name</small><b>${esc(disp(P.name))}</b></div><div class="mf2"><div class="mf"><small>Student ID</small><b>${esc(c.sid||'Not set')}</b></div><div class="mf"><small>Birthday</small><b>${b}</b></div></div></div></div>${c.nick?`<p class="mq">${esc(c.nick)}</p>`:''}</div><div class="card mdc"><div class="mood"><div class="mbig">${dragon(c.mood||'happy')}</div><div class="mtx"><small>How are you feeling?</small><b>${ml||'Tap one below'}</b></div></div><div class="moods">${MOODS.map(([k,l])=>`<button type="button" data-m="${k}" class="${c.mood===k?'on':''}" aria-label="${l}" title="${l}">${dragon(k)}</button>`).join('')}</div></div>`;
+ $('#ce').onclick=openCard;
+ $$('.moods button').forEach(x=>x.onclick=()=>{CARD.mood=x.dataset.m;saveCard()})}
 function openCard(){$('#cn').value=CARD.nick;$('#cb').value=CARD.bd;$('#cs').value=CARD.sid||'';drawCC();$('#cd').showModal()}
 function drawCC(){
  $('#cc').innerHTML=THEMES.map((t,i)=>`<button type="button" data-i="${i}" class="${CARD.c===i?'on':''}" style="background:${t}" aria-label="Color ${i+1}"></button>`).join('');
  $$('#cc button').forEach(b=>b.onclick=()=>{CARD.c=+b.dataset.i;saveCard();drawCC()});
- $$('#ca button').forEach(b=>{b.classList.toggle('on',+b.dataset.a===CARD.art);b.onclick=()=>{if(+b.dataset.a===2&&!CARD.photo){alert('Choose a photo first');return}CARD.art=+b.dataset.a;saveCard();drawCC()}})}
+ $$('#ca button').forEach(b=>{b.classList.toggle('on',+b.dataset.a===CARD.art);b.onclick=()=>{if(+b.dataset.a===2&&!CARD.photo){alert('Choose a photo first');return}if(+b.dataset.a===3&&!CARD.mood)CARD.mood='happy';CARD.art=+b.dataset.a;saveCard();drawCC()}})}
 $('#cn').oninput=()=>{CARD.nick=$('#cn').value;saveCard()};$('#cs').oninput=()=>{CARD.sid=$('#cs').value.trim();saveCard()};$('#cb').onchange=()=>{CARD.bd=$('#cb').value;saveCard()};
 $('#cf').onchange=e=>{const f=e.target.files[0];if(!f)return;const im=new Image();
  im.onload=()=>{const cv=document.createElement('canvas');cv.width=240;cv.height=300;const x=cv.getContext('2d'),s=Math.max(240/im.width,300/im.height);x.drawImage(im,(240-im.width*s)/2,(300-im.height*s)/2,im.width*s,im.height*s);CARD.photo=cv.toDataURL('image/jpeg',.8);CARD.art=2;saveCard();drawCC()};im.src=URL.createObjectURL(f)};
@@ -254,10 +270,20 @@ document.addEventListener('click',e=>{if(e.target.closest('.inst'))doInstall();e
 
 // ---------- Roster ----------
 function renderRoster(){
+ $('#rsearch').hidden=rmode==='g';
+ if(rmode==='g'){$('#rl').innerHTML=groupsView($('#rsub').value);$$('#rl [data-s]').forEach(e=>e.onclick=()=>{$('#rsub').value=e.dataset.s;renderRoster()});return}
  const q=$('#rsearch').value.toLowerCase(),s=$('#rsub').value,l=(s?enrolled(s):MASTER).filter(r=>r.n.toLowerCase().includes(q));
  $('#rl').innerHTML=`<p class="mut">${l.length} students</p>`+l.map(r=>`<div class="item"><b>${esc(r.n)}</b></div>`).join('')}
 $('#rsub').innerHTML=`<option value="">Whole class (${MASTER.length})</option>`+SUBJECTS.map(s=>`<option value="${s.id}">${s.code} (${enrolled(s.id).length})</option>`).join('');
 $('#rsub').onchange=renderRoster;
+let rmode='r';
+$$('#rm button').forEach(b=>b.onclick=()=>{rmode=b.dataset.m;$$('#rm button').forEach(x=>x.classList.toggle('on',x===b));renderRoster()});
+function groupsView(s){
+ const me=P?P.name:'',of=sub=>(GROUPS[sub]||[]).findIndex(l=>l.includes(me));
+ if(!s)return'<p class="mut">Tap a subject to see its groups.</p>'+Object.keys(GROUPS).map(sub=>{const g=of(sub),u=subj(sub);return`<div class="item" data-s="${sub}"><span><b>${u.code}</b> ${esc(u.title)}<br><small>${g>=0?'You are in Group '+(g+1):GROUPS[sub].length+' groups'}</small></span><span class="tag">${g>=0?'G'+(g+1):'View'}</span></div>`}).join('');
+ if(!GROUPS[s])return'<p class="mut">No groups for this subject yet.</p>';
+ const m=of(s);
+ return GROUPS[s].map((l,i)=>`<div class="card ${i===m?'mine':''}"><div class="row2"><b>Group ${i+1}</b><span><span class="tag">${l.length}</span>${i===m?'<span class="tag ok">Your group</span>':''}</span></div>${l.map(n=>`<div class="mini"><span>${esc(n)}${n===me?' (you)':''}</span></div>`).join('')}</div>`).join('')}
 $('#rsearch').oninput=renderRoster;
 
 // ---------- Boot ----------
